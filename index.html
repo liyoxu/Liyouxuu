@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#ffffff" />
+<title>LiYouXu</title>
+<link rel="stylesheet" href="css/base.css?v=56">
+<link rel="stylesheet" href="css/chat.css?v=56">
+<link rel="stylesheet" href="css/list.css?v=56">
+<link rel="stylesheet" href="css/settings.css?v=56">
+<link rel="stylesheet" href="css/flashcard.css?v=56">
+<link rel="stylesheet" href="css/tarot.css?v=56">
+</head>
+<body>
+<audio id="sendSound" src="audio/send.mp3" preload="auto"></audio>
+<audio id="receiveSound" src="audio/receive.mp3" preload="auto"></audio>
+<div class="toast" id="globalToast"></div>
+
+<div class="banner-notification" id="bannerNotification" onclick="jumpToChatFromBanner()">
+  <div class="banner-avatar" id="bannerAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+  <div class="banner-content"><div class="banner-title" id="bannerTitle">梦角</div><div class="banner-message" id="bannerMessage">你不在的时候收到 1 条新消息</div></div>
+</div>
+
+<div class="phone page-hidden" id="page1">
+  <div class="topbar">
+    <div class="topbar-side left"><div class="capsule-btn left" id="backToMenu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div></div>
+    <div class="center-info">
+      <div class="big-avatar" id="chatAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+      <div class="name-capsule"><span id="chatHeaderName" style="font-size:13px;padding:0;">梦角</span><span>›</span></div>
+      <div class="sub-text"><span>iMessage</span><span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>已加密</span></div>
+    </div>
+    <div class="topbar-side right"><div class="capsule-btn right"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></div></div>
+  </div>
+  <div class="chat" id="chatBox"></div>
+  <div class="app-drawer" id="appDrawer">
+    <div class="app-item"><div class="app-icon" style="color:#e74c3c;">红</div><span>红包</span></div>
+    <div class="app-item"><div class="app-icon" style="color:#2ecc71;">视</div><span>视频</span></div>
+    <div class="app-item"><div class="app-icon" style="color:#3498db;">位</div><span>位置</span></div>
+    <div class="app-item" id="openTarotBtn"><div class="app-icon" style="color:#9b59b6;">塔</div><span>塔罗牌</span></div>
+  </div>
+  <div class="inputbar">
+    <div class="plus-btn" id="plusBtn">+</div>
+    <input type="text" placeholder="iMessage 信息" id="chatInput" />
+    <div class="send" id="sendBtn">↑</div>
+  </div>
+</div>
+
+<div class="phone list-page-container" id="page2">
+  <div class="list-header-bar">
+    <h2>Messages</h2>
+    <div class="header-actions">
+      <div class="edit-btn">编辑</div>
+      <div class="new-msg-btn" id="openSettingsBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></div>
+    </div>
+  </div>
+  <div class="pinned-contacts" id="pinnedArea" style="display:none;">
+    <div class="pinned-item" id="pinnedContact" style="cursor:pointer;">
+      <div class="pinned-avatar" id="pinnedAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+      <span class="pinned-name" id="pinnedName">梦角</span>
+    </div>
+  </div>
+  <ul class="message-list" id="mainMessageList">
+    <li class="list-item" id="mainContactItem">
+      <div class="list-avatar" id="listAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+      <div class="list-content">
+        <div class="list-header">
+          <strong><span id="listName">梦角</span><div class="edit-name-btn" id="openContactEditBtn" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div></strong>
+          <span class="time-text">上午 9:41 <span class="arrow-right">›</span><span class="unread-badge" id="unreadBadge">0</span></span>
+        </div>
+        <div class="list-preview"><p id="listPreviewText">可以吗</p></div>
+      </div>
+    </li>
+  </ul>
+  <div class="floating-bottom">
+    <div class="search-pill"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>搜索</div>
+    <div class="camera-btn"><svg viewBox="0 0 24 24"><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg></div>
+  </div>
+</div>
+
+<div class="phone settings-page page-hidden" id="settingsPage">
+  <div class="settings-header"><div class="settings-back" id="settingsBackBtn">‹</div><h1>设置</h1></div>
+  <div class="settings-tabs">
+    <div class="settings-tab active" data-main="chat">聊天</div>
+    <div class="settings-tab" data-main="sound">音效</div>
+    <div class="settings-tab" data-main="appearance">外观</div>
+    <div class="settings-tab" data-main="about">关于</div>
+  </div>
+  <div class="settings-subtabs" id="chatSubtabs">
+    <div class="settings-subtab active" data-tab="reply">回复</div>
+  </div>
+  <div class="settings-content">
+    <div id="chatSettingsView">
+      <div class="settings-group-title">高级功能</div>
+      <div class="settings-group">
+        <div class="settings-item" id="openFlashcard"><span>字卡回复</span><span style="color:var(--im-text-soft);font-size:18px;">›</span></div>
+        <div class="settings-item"><span>拼字卡</span><div class="switch" id="pinziSwitch"></div></div>
+      </div>
+      
+      <div class="settings-group-title">交互</div>
+      <div class="settings-group">
+        <div class="settings-item"><span>多回复</span><div class="switch" id="multiReplySwitch"></div></div>
+        <div class="settings-item" id="multiReplyChanceRow" style="display:none;">
+          <span>触发概率</span>
+          <div class="num-input-wrap"><input type="number" class="num-input" id="multiReplyChance" value="50" min="0" max="100"><span class="num-suffix">%</span></div>
+        </div>
+        
+        <div class="settings-item"><span>未接收消息</span><div class="switch" id="testNotReceivedSwitch"></div></div>
+        <div class="settings-item" id="notReceivedChanceRow" style="display:none;">
+          <span>触发概率</span>
+          <div class="num-input-wrap"><input type="number" class="num-input" id="notReceivedChance" value="30" min="0" max="100"><span class="num-suffix">%</span></div>
+        </div>
+
+        <div class="settings-item"><span>已读不回</span><div class="switch" id="testReadNoReplySwitch"></div></div>
+        <div class="settings-item" id="readNoReplyChanceRow" style="display:none;">
+          <span>触发概率</span>
+          <div class="num-input-wrap"><input type="number" class="num-input" id="readNoReplyChance" value="30" min="0" max="100"><span class="num-suffix">%</span></div>
+        </div>
+
+        <div class="settings-item"><span>已读显示</span><div class="switch on"></div></div>
+        
+        <div class="settings-item"><span>引用回复</span><div class="switch" id="quoteReplySwitch"></div></div>
+        <div class="settings-item" id="quoteReplyChanceRow" style="display:none;">
+          <span>引用概率</span>
+          <div class="num-input-wrap"><input type="number" class="num-input" id="quoteReplyChance" value="30" min="0" max="100"><span class="num-suffix">%</span></div>
+        </div>
+      </div>
+
+      <div class="settings-group-title">时间</div>
+      <div class="settings-group">
+        <div class="settings-item" style="border-bottom:none;"><span>开启时间线</span><div class="switch on" id="timelineSwitch"></div></div>
+        <div class="settings-desc">若开启，聊天超过半小时会显示时间戳。</div>
+      </div>
+      <div class="settings-group-title">回复节奏</div>
+      <div class="settings-group">
+        <div class="settings-item"><span>最短回复时间</span><div class="num-input-wrap"><input type="number" class="num-input" id="minReplyTime" value="1" min="1" max="300"><span class="num-suffix">秒</span></div></div>
+        <div class="settings-item"><span>最长回复时间</span><div class="num-input-wrap"><input type="number" class="num-input" id="maxReplyTime" value="3" min="1" max="300"><span class="num-suffix">秒</span></div></div>
+      </div>
+      <div class="settings-desc" style="border-radius:12px;margin-top:-12px;margin-bottom:24px;">注：最短时间不得低于 1 秒，最长时间不得高于 300 秒。</div>
+      
+      <div class="settings-group-title">颜文字</div>
+      <div class="settings-group">
+        <div class="settings-item"><span>使用颜文字回复</span><div class="switch" id="pokeReplySwitch"></div></div>
+        <div class="settings-item" id="pokeChanceRow" style="display:none;">
+          <span>颜文字概率</span>
+          <div class="num-input-wrap"><input type="number" class="num-input" id="pokeReplyChance" value="20" min="0" max="100"><span class="num-suffix">%</span></div>
+        </div>
+      </div>
+      <div class="settings-desc" style="border-radius:12px;margin-top:-12px;margin-bottom:24px;">开启后，每次回复有指定概率发送颜文字，否则发送普通字卡。</div>
+
+      <div class="settings-group-title">自动回复角标</div>
+      <div class="settings-group">
+        <div class="settings-item"><span>启用自动角标</span><div class="switch" id="tapbackSwitch"></div></div>
+        <div class="settings-item" id="tapbackChanceRow" style="display:none;">
+          <span>角标概率</span>
+          <div class="num-input-wrap"><input type="number" class="num-input" id="tapbackChance" value="30" min="0" max="100"><span class="num-suffix">%</span></div>
+        </div>
+      </div>
+      <div class="settings-desc" style="border-radius:12px;margin-top:-12px;">开启后，发出的消息有一定概率自动带上小贴纸角标。注：手动长按贴纸不受此开关影响。</div>
+    </div>
+    
+    <div id="soundMainView" style="display:none;">
+      <div class="settings-group-title">提示音</div>
+      <div class="settings-group">
+        <div class="settings-item"><span>发送音效</span><div class="switch on"></div></div>
+        <div class="settings-item"><span>接收音效</span><div class="switch on"></div></div>
+      </div>
+    </div>
+    
+    <div id="appearanceView" style="display:none;">
+      <div class="settings-group-title">主题模式</div>
+      <div class="settings-group">
+        <div class="settings-item" id="themeLightBtn">
+          <span>默认浅色</span><span class="theme-check" style="color:var(--im-blue);">✓</span>
+        </div>
+        <div class="settings-item" id="themeDarkBtn">
+          <span>深色模式</span><span class="theme-check" style="display:none; color:var(--im-blue);">✓</span>
+        </div>
+      </div>
+      
+      <div class="settings-group-title">我的气泡颜色</div>
+      <div class="settings-group" style="padding: 20px; display: flex; gap: 16px; justify-content: center; align-items: center;" id="bubbleColorPicker">
+        <div class="color-circle active" data-color="#0b84ff" style="background-color: #0b84ff;"></div>
+        <div class="color-circle" data-color="#3a3a3c" style="background-color: #3a3a3c;"></div>
+        <div class="color-circle" data-color="#28a745" style="background-color: #28a745;"></div>
+      </div>
+
+      <div class="settings-group-title">聊天背景</div>
+      <div class="settings-group">
+        <div class="settings-item" id="changeBgBtn">
+          <span>更换背景图片</span>
+          <span style="color:var(--im-text-soft);font-size:18px;">›</span>
+        </div>
+        <div class="settings-item" id="resetBgBtn">
+          <span>恢复默认背景</span>
+        </div>
+      </div>
+      <div class="settings-desc" style="border-radius:12px;margin-top:-12px;">注：由于是测试模式，刷新网页后背景会恢复默认。</div>
+      <input type="file" id="bgUploadInput" accept="image/*" style="display: none;">
+    </div>
+    
+    <div id="aboutView" style="display:none;">
+      <div class="settings-group-title">关于</div>
+      <div class="settings-desc" style="border-radius:12px;">LiYouXu 字卡传讯</div>
+    </div>
+  </div>
+</div>
+
+<div class="phone tarot-page page-hidden" id="tarotPage">
+  <div class="tarot-navbar"><div class="tarot-back" id="tarotBackBtn">‹</div><h2>塔罗牌</h2></div>
+  <div class="tarot-content">
+    <div class="tarot-status-pill" id="tarotStatusPill">请默念问题，抽取 3 张牌</div>
+    <div class="tarot-sub-hint"><span id="deckCountText">剩 78 张</span> · <span id="drawnCountText">已抽 0/3 张</span></div>
+    <input type="text" class="tarot-question-input" id="tarotQuestion" placeholder="在此写下你的问题（可选）..." />
+    <div class="tarot-deck-area" id="tarotDeckArea"></div>
+    <div class="tarot-result-area" id="tarotResultArea">
+      <div class="result-cards">
+        <div class="tarot-card-box" id="resCard1"><div class="tarot-card-inner"><div class="tarot-card-face"></div><div class="tarot-card-face tarot-front"><div class="result-name"></div><div class="result-status"></div><div class="result-meaning"></div></div></div></div>
+        <div class="tarot-card-box" id="resCard2"><div class="tarot-card-inner"><div class="tarot-card-face"></div><div class="tarot-card-face tarot-front"><div class="result-name"></div><div class="result-status"></div><div class="result-meaning"></div></div></div></div>
+        <div class="tarot-card-box" id="resCard3"><div class="tarot-card-inner"><div class="tarot-card-face"></div><div class="tarot-card-face tarot-front"><div class="result-name"></div><div class="result-status"></div><div class="result-meaning"></div></div></div></div>
+      </div>
+      <button class="reset-btn" id="resetTarotBtn">重新占卜</button>
+    </div>
+  </div>
+</div>
+
+<div class="settings-overlay" id="contactEditModal">
+  <div class="settings-panel contact-modal">
+    <div class="contact-avatar-edit" id="editAvatarBox"><input type="file" id="avatarInput" accept="image/*"><svg id="editAvatarSvg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+    <div class="contact-name-edit" id="editNameBox" onclick="openRenameModal()">梦角</div>
+    <div class="sub-list">
+      <div class="sub-row" onclick="togglePinContact()"><span>置顶联系人</span><span class="sub-value" id="pinStatusText">未置顶</span></div>
+      <div class="sub-row" style="color:var(--im-red);justify-content:center;" onclick="deleteContact()">删除联系人及记录</div>
+    </div>
+    <button class="settings-close-btn" onclick="document.getElementById('contactEditModal').classList.remove('active')">完成</button>
+  </div>
+</div>
+
+<div class="mini-modal-overlay" id="renameModal">
+  <div class="mini-modal-panel">
+    <div class="mini-modal-title">修改名称</div>
+    <input type="text" class="im-input" id="renameInput" placeholder="请输入新的联系人名称..." />
+    <div class="mini-btn-row"><button class="mini-btn cancel" id="renameCancelBtn">取消</button><button class="mini-btn confirm" id="renameConfirmBtn">确定</button></div>
+  </div>
+</div>
+
+<div class="phone flashcard-page page-hidden" id="flashcardPage">
+  <div class="fc-navbar">
+    <div class="fc-nav-left"><div class="fc-back" id="fcBackBtn">‹</div><h2>字卡库</h2></div>
+    <div class="fc-nav-right"><div class="fc-select" id="selectModeBtn">选择</div><div class="fc-save">完成</div></div>
+  </div>
+  <div class="fc-content">
+    <div class="fc-tabs">
+      <div class="fc-tab active" data-tab="reply">回复</div>
+      <div class="fc-tab" data-tab="poke">颜文字</div>
+      <div class="fc-tab" data-tab="pinzi">拼字卡</div>
+    </div>
+    <div id="replyView">
+      <div class="fc-toolbar" id="replyToolbar">
+        <div class="fc-tool-btn" id="searchBtn">查找</div>
+        <div class="fc-tool-btn" id="openBatchAddBtn">+添加</div>
+        <div class="fc-tool-btn" id="dedupBtn">去重</div>
+        <div class="fc-tool-btn" id="importBtn">导入</div>
+        <div class="fc-tool-btn" id="exportBtn">导出</div>
+      </div>
+      <div class="fc-search-container" id="searchContainer"><input type="text" class="fc-search-input" id="searchInput" placeholder="搜索字卡内容..." autocomplete="off"></div>
+      <div class="fc-filters" id="replyFilters">
+        <div class="fc-filter-btn">
+          <div class="fc-filter-left">
+            <div class="rename-btn" id="renameGroupBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div>
+            <span id="currentGroupName">内置字卡</span>
+          </div>
+          <div class="fc-filter-right">
+            <div class="block-group-btn" id="blockGroupBtn" title="整组屏蔽"></div>
+            <div class="group-trigger" id="openGroupModal"><svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-list" id="fcList"></div>
+    </div>
+    
+    <div id="pokeView" style="display:none;">
+      <div class="fc-toolbar" id="pokeToolbar">
+        <div class="fc-tool-btn" id="pokeSearchBtn">查找</div>
+        <div class="fc-tool-btn" id="openPokeBatchAddBtn">+添加</div>
+        <div class="fc-tool-btn" id="pokeDedupBtn">去重</div>
+        <div class="fc-tool-btn" id="pokeImportBtn">导入</div>
+        <div class="fc-tool-btn" id="pokeExportBtn">导出</div>
+      </div>
+      <div class="fc-search-container" id="pokeSearchContainer"><input type="text" class="fc-search-input" id="pokeSearchInput" placeholder="搜索颜文字..." autocomplete="off"></div>
+      <div class="fc-filters" id="pokeFilters">
+        <div class="fc-filter-btn">
+          <div class="fc-filter-left">
+            <div class="rename-btn" id="renamePokeGroupBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div>
+            <span id="currentPokeGroupName">内置颜文字</span>
+          </div>
+          <div class="fc-filter-right">
+            <div class="block-group-btn" id="pokeBlockGroupBtn" title="整组屏蔽"></div>
+            <div class="group-trigger" id="openPokeGroupModal"><svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-list" id="pokeList"></div>
+    </div>
+    
+    <div id="pinziView" style="display:none;"><div class="fc-list" id="pinziList"></div></div>
+  </div>
+  <div class="batch-action-bar" id="batchActionBar"><div class="batch-btn" id="batchSelectAllBtn">全选</div><div class="batch-btn" id="batchMoveBtn">分组</div><div class="batch-btn" id="batchBlockBtn">屏蔽</div><div class="batch-btn danger" id="batchDeleteBtn">删除</div></div>
+</div>
+
+<div class="mini-modal-overlay" id="groupModal">
+  <div class="mini-modal-panel">
+    <div class="mini-modal-title" id="groupModalTitle">选择分组</div>
+    <div class="group-list" id="groupListContainer"></div>
+    <div class="mini-btn-row"><button class="mini-btn cancel" id="groupCancelBtn">取消</button></div>
+  </div>
+</div>
+
+<div class="mini-modal-overlay" id="createGroupModal">
+  <div class="mini-modal-panel">
+    <div class="mini-modal-title" id="createGroupTitle">新建分组</div>
+    <input type="text" class="im-input" id="newGroupInput" placeholder="请输入分组名称..." />
+    <div class="mini-btn-row"><button class="mini-btn cancel" id="createGroupCancelBtn">取消</button><button class="mini-btn confirm" id="createGroupConfirmBtn">确定</button></div>
+  </div>
+</div>
+
+<div class="mini-modal-overlay" id="batchAddModal">
+  <div class="mini-modal-panel">
+    <div class="mini-modal-title" id="batchModalTitle">批量添加字卡回复</div>
+    <textarea class="im-batch-textarea" id="batchInput" placeholder="在此输入内容，每行一条..."></textarea>
+    <div class="im-batch-hint" id="batchCountHint">准备添加 0 条内容</div>
+    <div class="batch-select-group" id="batchSelectGroupBtn"><span id="batchGroupName">添加到：内置字卡</span><svg width="14" height="14" viewBox="0 0 24 24" style="fill:var(--im-text-soft);"><path d="M7 10l5 5 5-5z"/></svg></div>
+    <div class="mini-btn-row"><button class="mini-btn cancel" id="batchCancelBtn">取消</button><button class="mini-btn confirm" id="batchConfirmBtn">添加</button></div>
+  </div>
+</div>
+
+<div class="mini-modal-overlay" id="importModal">
+  <div class="mini-modal-panel">
+    <div class="mini-modal-title">导入字卡 (JSON)</div>
+    <div class="import-group-select">
+      <label>添加到分组：</label>
+      <select id="importGroupSelect"></select>
+    </div>
+    <div class="import-file-area" onclick="document.getElementById('importFileInput').click()">
+      <span id="importFileName">点击选择 JSON 文件</span>
+      <input type="file" id="importFileInput" accept=".json" style="display: none;">
+    </div>
+    <div class="mini-btn-row" style="margin-top: 20px;">
+      <button class="mini-btn cancel" id="importCancelBtn">取消</button>
+      <button class="mini-btn confirm" id="importConfirmBtn">确认导入</button>
+    </div>
+  </div>
+</div>
+
+<div class="mini-modal-overlay" id="exportModal">
+  <div class="mini-modal-panel">
+    <div class="mini-modal-title">导出字卡 (JSON)</div>
+    <div class="export-options">
+      <label class="export-radio-label">
+        <input type="radio" name="exportType" value="all" checked>
+        <span>全部字卡 (包含所有分组及内置)</span>
+      </label>
+      <label class="export-radio-label">
+        <input type="radio" name="exportType" value="group">
+        <span>按分组导出</span>
+      </label>
+    </div>
+    <div class="import-group-select" id="exportGroupSelectWrap" style="display:none;">
+      <label>选择分组：</label>
+      <select id="exportGroupSelect"></select>
+    </div>
+    <div class="mini-btn-row" style="margin-top: 20px;">
+      <button class="mini-btn cancel" id="exportCancelBtn">取消</button>
+      <button class="mini-btn confirm" id="exportConfirmBtn">保存文件</button>
+    </div>
+  </div>
+</div>
+
+<div class="context-menu-overlay" id="contextMenuOverlay">
+  <div class="context-menu-panel">
+    <div class="ctx-title" id="ctxStickerTitle">添加贴纸</div>
+    <div class="ctx-stickers" id="ctxStickerContainer">
+      <div class="ctx-sticker-btn" data-emoji="❗️">❗️</div>
+      <div class="ctx-sticker-btn" data-emoji="❓">❓</div>
+      <div class="ctx-sticker-btn" data-emoji="❤️">❤️</div>
+      <div class="ctx-sticker-btn" data-emoji="">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </div>
+    </div>
+    <div class="ctx-divider" id="ctxStickerDivider"></div>
+    <div class="ctx-item" id="ctxDeleteBtn">
+      <span>删除消息</span>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+    </div>
+    <div class="ctx-divider"></div>
+    <div class="ctx-item" id="ctxQuoteBtn">
+      <span>引用消息</span>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>
+    </div>
+  </div>
+</div>
+
+<script src="data/builtin-cards.js"></script>
+<script src="data/builtin-poke.js"></script>
+<script src="js/core.js?v=56"></script>
+<script src="js/settings.js?v=56"></script>
+<script src="js/contact.js?v=56"></script>
+<script src="js/chat.js?v=56"></script>
+<script src="js/tarot.js?v=56"></script>
+<script src="js/flashcard.js?v=56"></script>
+</body>
+</html>
